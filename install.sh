@@ -190,7 +190,8 @@ require_brew zsh
 # update ruby to latest
 # use versions of packages installed with homebrew
 RUBY_CONFIGURE_OPTS="--with-openssl-dir=`brew --prefix openssl` --with-readline-dir=`brew --prefix readline` --with-libyaml-dir=`brew --prefix libyaml`"
-require_brew ruby
+# require_brew ruby
+
 # set zsh as the user login shell
 CURRENTSHELL=$(dscl . -read /Users/$USER UserShell | awk '{print $2}')
 if [[ "$CURRENTSHELL" != "/usr/local/bin/zsh" ]]; then
@@ -201,9 +202,9 @@ if [[ "$CURRENTSHELL" != "/usr/local/bin/zsh" ]]; then
   ok
 fi
 
-if [[ ! -d "./oh-my-zsh/custom/themes/powerlevel9k" ]]; then
-  git clone https://github.com/bhilburn/powerlevel9k.git oh-my-zsh/custom/themes/powerlevel9k
-fi
+# if [[ ! -d "./oh-my-zsh/custom/themes/powerlevel9k" ]]; then
+#   git clone https://github.com/bhilburn/powerlevel9k.git oh-my-zsh/custom/themes/powerlevel9k
+# fi
 
 bot "creating symlinks for project dotfiles..."
 pushd homedir > /dev/null 2>&1
@@ -275,9 +276,9 @@ bot "installing npm tools needed to run this project..."
 npm install
 ok
 
-bot "installing packages from config.js..."
-node index.js
-ok
+# bot "installing packages from config.js..."
+# node index.js
+# ok
 
 running "cleanup homebrew"
 brew cleanup > /dev/null 2>&1
@@ -363,12 +364,12 @@ sudo systemsetup -setwakeonnetworkaccess off
 # Disable guest account login
 sudo defaults write /Library/Preferences/com.apple.loginwindow GuestEnabled -bool false
 
-# Automatically lock the login keychain for inactivity after 6 hours
-#security set-keychain-settings -t 21600 -l ~/Library/Keychains/login.keychain
+# Automatically lock the login keychain for inactivity after 3 hours
+#security set-keychain-settings -t 10800 -l ~/Library/Keychains/login.keychain
 
 # Destroy FileVault key when going into standby mode, forcing a re-auth.
 # Source: https://web.archive.org/web/20160114141929/http://training.apple.com/pdf/WP_FileVault2.pdf
-#sudo pmset destroyfvkeyonstandby 1
+sudo pmset destroyfvkeyonstandby 1
 
 # Disable Bonjour multicast advertisements
 #sudo defaults write /Library/Preferences/com.apple.mDNSResponder.plist NoMulticastAdvertisements -bool true
@@ -459,10 +460,10 @@ sudo chflags uchg /Private/var/vm/sleepimage;ok
 # running "Wipe all (default) app icons from the Dock"
 # # This is only really useful when setting up a new Mac, or if you don’t use
 # # the Dock to launch apps.
-# defaults write com.apple.dock persistent-apps -array "";ok
+defaults write com.apple.dock persistent-apps -array "";ok
 
 #running "Enable the 2D Dock"
-#defaults write com.apple.dock no-glass -bool true;ok
+# defaults write com.apple.dock no-glass -bool true;ok
 
 #running "Disable the Launchpad gesture (pinch with thumb and three fingers)"
 #defaults write com.apple.dock showLaunchpadGestureEnabled -int 0;ok
@@ -482,8 +483,8 @@ sudo nvram boot-args="-v";ok
 running "allow 'locate' command"
 sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist > /dev/null 2>&1;ok
 
-running "Set standby delay to 24 hours (default is 1 hour)"
-sudo pmset -a standbydelay 86400;ok
+running "Set standby delay to 30 minutes (default is 1 hour)"
+sudo pmset -a standbydelay 1800;ok
 
 running "Disable the sound effects on boot"
 sudo nvram SystemAudioVolume=" ";ok
@@ -627,8 +628,8 @@ running "Require password immediately after sleep or screen saver begins"
 defaults write com.apple.screensaver askForPassword -int 1
 defaults write com.apple.screensaver askForPasswordDelay -int 0;ok
 
-running "Save screenshots to the desktop"
-defaults write com.apple.screencapture location -string "${HOME}/Desktop";ok
+running "Save screenshots to ~/screenshots"
+defaults write com.apple.screencapture location -string "${HOME}/screenshots";ok
 
 running "Save screenshots in PNG format (other options: BMP, GIF, JPG, PDF, TIFF)"
 defaults write com.apple.screencapture type -string "png";ok
@@ -654,10 +655,12 @@ defaults write com.apple.finder QuitMenuItem -bool true;ok
 running "Disable window animations and Get Info animations"
 defaults write com.apple.finder DisableAllAnimations -bool true;ok
 
-running "Set Desktop as the default location for new Finder windows"
+running "Set ~ as the default location for new Finder windows"
 # For other paths, use 'PfLo' and 'file:///full/path/here/'
-defaults write com.apple.finder NewWindowTarget -string "PfDe"
-defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/Desktop/";ok
+# defaults write com.apple.finder NewWindowTarget -string "PfDe"
+# defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/Desktop/";ok
+NewWindowTarget -string "PfLo"
+defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/";ok
 
 running "Show hidden files by default"
 defaults write com.apple.finder AppleShowAllFiles -bool true;ok
@@ -799,9 +802,12 @@ bot "Configuring Hot Corners"
 running "Top left screen corner → Mission Control"
 defaults write com.apple.dock wvous-tl-corner -int 2
 defaults write com.apple.dock wvous-tl-modifier -int 0;ok
-running "Top right screen corner → Desktop"
-defaults write com.apple.dock wvous-tr-corner -int 4
+running "Top right screen corner → Notification Center"
+defaults write com.apple.dock wvous-tr-corner -int 12
 defaults write com.apple.dock wvous-tr-modifier -int 0;ok
+running "Bottom left screen corner → Desktop"
+defaults write com.apple.dock wvous-bl-corner -int 4
+defaults write com.apple.dock wvous-bl-modifier -int 0;ok
 running "Bottom right screen corner → Start screen saver"
 defaults write com.apple.dock wvous-br-corner -int 5
 defaults write com.apple.dock wvous-br-modifier -int 0;ok
@@ -1017,8 +1023,8 @@ defaults write com.apple.appstore ShowDebugMenu -bool true;ok
 bot "Messages"
 ###############################################################################
 
-running "Disable automatic emoji substitution (i.e. use plain text smileys)"
-defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool false;ok
+# running "Disable automatic emoji substitution (i.e. use plain text smileys)"
+# defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool false;ok
 
 running "Disable smart quotes as it’s annoying for messages that contain code"
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticQuoteSubstitutionEnabled" -bool false;ok
@@ -1026,17 +1032,17 @@ defaults write com.apple.messageshelper.MessageController SOInputLineSettings -d
 running "Disable continuous spell checking"
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "continuousSpellCheckingEnabled" -bool false;ok
 
-###############################################################################
-bot "SizeUp.app"
-###############################################################################
+# ###############################################################################
+# bot "SizeUp.app"
+# ###############################################################################
 
-running "Start SizeUp at login"
-defaults write com.irradiatedsoftware.SizeUp StartAtLogin -bool true;ok
+# running "Start SizeUp at login"
+# defaults write com.irradiatedsoftware.SizeUp StartAtLogin -bool true;ok
 
-running "Don’t show the preferences window on next start"
-defaults write com.irradiatedsoftware.SizeUp ShowPrefsOnNextStart -bool false;ok
+# running "Don’t show the preferences window on next start"
+# defaults write com.irradiatedsoftware.SizeUp ShowPrefsOnNextStart -bool false;ok
 
-killall cfprefsd
+# killall cfprefsd
 
 ###############################################################################
 # Kill affected applications                                                  #
