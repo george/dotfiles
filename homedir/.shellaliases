@@ -10,9 +10,9 @@ alias g=git
 # Lock the screen (when going AFK)
 alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
 
-# buzzphrase commit
-# used for my presentation decks when I have nothing to say about the commit
-alias bpc='git add -A . && git cam "$(buzzphrase 2)" && git push'
+# # buzzphrase commit
+# # used for my presentation decks when I have nothing to say about the commit
+# alias bpc='git add -A . && git cam "$(buzzphrase 2)" && git push'
 
 # recursive dos2unix in current directory
 alias dos2lf='dos2unix `find ./ -type f`'
@@ -32,7 +32,7 @@ alias files.usage='sudo fs_usage -e -f filesystem|grep -v CACHE_HIT|grep -v grep
 # Files in use in the Users directory
 alias files.usage.user='sudo fs_usage -e -f filesystem|grep -v CACHE_HIT|grep -v grep|grep Users'
 
-alias game.seek='txt="";for i in {1..20};do txt=$txt"$i. ";done;txt=$txt" Ready or not, here I come";say $txt'
+# alias game.seek='txt="";for i in {1..20};do txt=$txt"$i. ";done;txt=$txt" Ready or not, here I come";say $txt'
 
 # Git Tools
 # assumes git-up is installed (gem install git-up)
@@ -67,7 +67,7 @@ alias ll='ls -l -G -h -p '
 alias path='echo -e ${PATH//:/\\n}'
 
 # Copy and paste and prune the usless newline
-alias pbcopynn='tr -d "\n" | pbcopy'
+alias ppc='tr -d "\n" | pbcopy'
 
 # firewall management
 alias port-forward-enable="echo 'rdr pass inet proto tcp from any to any port 2376 -> 127.0.0.1 port 2376' | sudo pfctl -ef -"
@@ -100,3 +100,51 @@ alias td="todo.sh"
 alias tda="todo.sh add"
 alias tdl="todo.sh list"
 alias tdd="todo.sh do"
+
+# legacy aliases (from Geo el cap)
+alias br="git branch"
+alias brv="git branch -vv"
+alias co="git checkout"
+alias pull="git pull"
+alias st="git status"
+
+alias w='cd ~/work'
+alias y='cd ~/work/YNAB'
+alias dotfiles='cd $ZSH'
+alias hg="history | grep"
+alias hgc="history | grep -C"
+
+alias hu="heroku"
+
+alias aag='alias | grep'
+
+# Ruby
+alias irbs='irb --simple-prompt'
+alias glg='gem list | grep'
+alias gi='gem install'
+alias gup='gem update'
+alias gun='gem uninstall'
+
+# Rails
+alias r="rails"
+alias be="bundle exec"
+
+# YNAB
+alias omst='cd ~/work/YNAB/ynab_omni_store'
+alias iap='cd ~/work/YNAB/ynab_in_app_purchase'
+alias bee='cd ~/work/YNAB/ynab_beeline'
+
+alias ever='cd ~/work/YNAB/evergreen'
+alias api='cd ~/work/YNAB/evergreen/ynab_api'
+alias web='cd ~/work/YNAB/evergreen/ynab_web'
+alias sl='cd ~/work/YNAB/evergreen/ynab_shared_library'
+alias vag='cd ~/work/YNAB/evergreen/ynab_vagrant'
+
+alias z='zapier'
+alias zap='cd ~/work/YNAB/ynab-zapier'
+
+# OWL
+alias owl='cd ~/work/owl'
+
+alias git.delete.merged.branches="git branch -d `git branch --merged | grep -v '^*' | grep -v 'develop' | grep -v 'master' | tr -d '\n'`"
+alias git.undo='git reset --soft HEAD^' # Undo last commit retaining changes
