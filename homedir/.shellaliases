@@ -140,8 +140,8 @@ alias web='cd ~/work/YNAB/evergreen/ynab_web'
 alias sl='cd ~/work/YNAB/evergreen/ynab_shared_library'
 alias vag='cd ~/work/YNAB/evergreen/ynab_vagrant'
 
-alias z='zapier'
-alias zap='cd ~/work/YNAB/ynab-zapier'
+# alias z='zapier'
+# alias zap='cd ~/work/YNAB/ynab-zapier'
 
 # OWL
 alias owl='cd ~/work/owl'
