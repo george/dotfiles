@@ -54,14 +54,19 @@ alias network.established='lsof -l -i +L -R -V | grep ESTABLISHED'
 alias network.externalip='curl -s http://checkip.dyndns.org/ | sed "s/[a-zA-Z<>/ :]//g"'
 alias network.internalip="ifconfig en0 | egrep -o '([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)'"
 
-# Directory listings
-# LS_COLORS='no=01;37:fi=01;37:di=07;96:ln=01;36:pi=01;32:so=01;35:do=01;35:bd=01;33:cd=01;33:ex=01;31:mi=00;05;37:or=00;05;37:'
-# -G Add colors to ls
-# -l Long format
-# -h Short size suffixes (B, K, M, G, P)
-# -p Postpend slash to folders
-alias ls='ls -G -h -p '
-alias ll='ls -l -G -h -p '
+# -A  List all entries except for . and ..
+# -F  Display a slash (`/') immediately after each pathname that is a directory, an asterisk (`*') after
+#     each that is executable, an at sign (`@') after each symbolic link, an equals sign (`=') after each
+#     socket, a percent sign (`%') after each whiteout, and a vertical bar (`|') after each that is a FIFO.
+# -l  (The lowercase letter ``ell''.)  List in long format.  (See below.)  If the output is to a terminal,
+#     a total sum for all the file sizes is output on a line before the long listing.
+# -P  If argument is a symbolic link, list the link itself rather than the object the link references.
+#     This option cancels the -H and -L options.
+# -h  When used with the -l option, use unit suffixes: Byte, Kilobyte, Megabyte, Gigabyte, Terabyte and
+#     Petabyte in order to reduce the number of digits to three or less using base 2 for sizes.
+# -G  Enable colorized output (see `man ls` for details)
+# -H  Symbolic links on the command line are followed.  This option is assumed if none of the -F, -d, or -l options are specified.
+alias ls="/bin/ls -AFlPhGH"
 
 # Print each PATH entry on a separate line
 alias path='echo -e ${PATH//:/\\n}'
