@@ -3,6 +3,7 @@
 ###########################
 # This script installs the dotfiles and runs all other system configuration scripts
 # @author Adam Eivy
+# @editor George Anderson
 ###########################
 
 # include my library helpers for colorized echo and require_brew, etc
@@ -12,7 +13,7 @@ source ./lib_sh/requirers.sh
 bot "Hi! I'm going to install tooling and tweak your system settings. Here I go..."
 
 # Ask for the administrator password upfront
-if ! sudo grep -q "%wheel		ALL=(ALL) NOPASSWD: ALL #george/dotfiles" "/etc/sudoers"; then
+if ! sudo grep -q "%wheel		ALL=(ALL) NOPASSWD: ALL #atomantic/dotfiles" "/etc/sudoers"; then
 
   # Ask for the administrator password upfront
   bot "I need you to enter your sudo password so I can install some things:"
@@ -20,6 +21,17 @@ if ! sudo grep -q "%wheel		ALL=(ALL) NOPASSWD: ALL #george/dotfiles" "/etc/sudoe
 
   # Keep-alive: update existing sudo time stamp until the script has finished
   while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+
+  bot "Do you want me to setup this machine to allow you to run sudo without a password?\nPlease read here to see what I am doing:\nhttp://wiki.summercode.com/sudo_without_a_password_in_mac_os_x \n"
+
+  read -r -p "Make sudo passwordless? [y|N] " response
+
+  if [[ $response =~ (yes|y|Y) ]];then
+      sudo cp /etc/sudoers /etc/sudoers.back
+      echo '%wheel		ALL=(ALL) NOPASSWD: ALL #atomantic/dotfiles' | sudo tee -a /etc/sudoers > /dev/null
+      sudo dscl . append /Groups/wheel GroupMembership $(whoami)
+      bot "You can now run sudo commands without password!"
+  fi
 fi
 
 # /etc/hosts
@@ -104,29 +116,6 @@ if [[ $? = 0 ]]; then
   fi
 fi
 
-# MD5_NEWWP=$(md5 img/wallpaper.jpg | awk '{print $4}')
-# MD5_OLDWP=$(md5 /System/Library/CoreServices/DefaultDesktop.jpg | awk '{print $4}')
-# if [[ "$MD5_NEWWP" != "$MD5_OLDWP" ]]; then
-#   read -r -p "Do you want to use the project's custom desktop wallpaper? [Y|n] " response
-#   if [[ $response =~ ^(no|n|N) ]];then
-#     echo "skipping...";
-#     ok
-#   else
-#     running "Set a custom wallpaper image"
-#     # `DefaultDesktop.jpg` is already a symlink, and
-#     # all wallpapers are in `/Library/Desktop Pictures/`. The default is `Wave.jpg`.
-#     rm -rf ~/Library/Application Support/Dock/desktoppicture.db
-#     sudo rm -f /System/Library/CoreServices/DefaultDesktop.jpg > /dev/null 2>&1
-#     sudo rm -f /Library/Desktop\ Pictures/El\ Capitan.jpg > /dev/null 2>&1
-#     sudo rm -f /Library/Desktop\ Pictures/Sierra.jpg > /dev/null 2>&1
-#     sudo rm -f /Library/Desktop\ Pictures/Sierra\ 2.jpg > /dev/null 2>&1
-#     sudo cp ./img/wallpaper.jpg /System/Library/CoreServices/DefaultDesktop.jpg;
-#     sudo cp ./img/wallpaper.jpg /Library/Desktop\ Pictures/Sierra.jpg;
-#     sudo cp ./img/wallpaper.jpg /Library/Desktop\ Pictures/Sierra\ 2.jpg;
-#     sudo cp ./img/wallpaper.jpg /Library/Desktop\ Pictures/El\ Capitan.jpg;ok
-#   fi
-# fi
-
 #####
 # install homebrew (CLI Packages)
 #####
@@ -179,8 +168,7 @@ require_brew zsh
 # update ruby to latest
 # use versions of packages installed with homebrew
 RUBY_CONFIGURE_OPTS="--with-openssl-dir=`brew --prefix openssl` --with-readline-dir=`brew --prefix readline` --with-libyaml-dir=`brew --prefix libyaml`"
-# require_brew ruby
-
+require_brew ruby
 # set zsh as the user login shell
 CURRENTSHELL=$(dscl . -read /Users/$USER UserShell | awk '{print $2}')
 if [[ "$CURRENTSHELL" != "/usr/local/bin/zsh" ]]; then
@@ -190,10 +178,6 @@ if [[ "$CURRENTSHELL" != "/usr/local/bin/zsh" ]]; then
   sudo dscl . -change /Users/$USER UserShell $SHELL /usr/local/bin/zsh > /dev/null 2>&1
   ok
 fi
-
-# if [[ ! -d "./oh-my-zsh/custom/themes/powerlevel9k" ]]; then
-#   git clone https://github.com/bhilburn/powerlevel9k.git oh-my-zsh/custom/themes/powerlevel9k
-# fi
 
 bot "creating symlinks for project dotfiles..."
 pushd homedir > /dev/null 2>&1
@@ -220,10 +204,10 @@ done
 popd > /dev/null 2>&1
 
 
-# bot "Installing vim plugins"
-# # cmake is required to compile vim bundle YouCompleteMe
-# # require_brew cmake
-# vim +PluginInstall +qall > /dev/null 2>&1
+bot "Installing vim plugins"
+# cmake is required to compile vim bundle YouCompleteMe
+# require_brew cmake
+vim +PluginInstall +qall > /dev/null 2>&1
 
 bot "installing fonts"
 ./fonts/install.sh
@@ -239,9 +223,17 @@ require_cask font-roboto-mono-for-powerline
 require_cask font-source-code-pro
 ok
 
-if [[ -d "/Library/Ruby/Gems/2.0.0" ]]; then
-  running "Fixing Ruby Gems Directory Permissions"
-  sudo chown -R $(whoami) /Library/Ruby/Gems/2.0.0
+# if [[ -d "/Library/Ruby/Gems/2.0.0" ]]; then
+#   running "Fixing Ruby Gems Directory Permissions"
+#   sudo chown -R $(whoami) /Library/Ruby/Gems/2.0.0
+#   ok
+# fi
+
+if [[ -d "~/.rbenv" ]]; then
+  running "Fixing ~/.rbenv/ Permissions"
+  sudo chown -R $(whoami) ~/.rbenv
+  sudo chmod -R u+x ~/.rbenv
+  # sudo chmod -R a+r ~/.rbenv # not sure if this is necessary (January 7, 2019)
   ok
 fi
 
@@ -353,12 +345,12 @@ sudo systemsetup -setwakeonnetworkaccess off
 # Disable guest account login
 sudo defaults write /Library/Preferences/com.apple.loginwindow GuestEnabled -bool false
 
-# Automatically lock the login keychain for inactivity after 3 hours
-#security set-keychain-settings -t 10800 -l ~/Library/Keychains/login.keychain
+# Automatically lock the login keychain for inactivity after 6 hours
+#security set-keychain-settings -t 21600 -l ~/Library/Keychains/login.keychain
 
 # Destroy FileVault key when going into standby mode, forcing a re-auth.
 # Source: https://web.archive.org/web/20160114141929/http://training.apple.com/pdf/WP_FileVault2.pdf
-sudo pmset destroyfvkeyonstandby 1
+#sudo pmset destroyfvkeyonstandby 1
 
 # Disable Bonjour multicast advertisements
 #sudo defaults write /Library/Preferences/com.apple.mDNSResponder.plist NoMulticastAdvertisements -bool true
@@ -449,10 +441,10 @@ sudo chflags uchg /Private/var/vm/sleepimage;ok
 # running "Wipe all (default) app icons from the Dock"
 # # This is only really useful when setting up a new Mac, or if you don’t use
 # # the Dock to launch apps.
-defaults write com.apple.dock persistent-apps -array "";ok
+# defaults write com.apple.dock persistent-apps -array "";ok
 
 #running "Enable the 2D Dock"
-# defaults write com.apple.dock no-glass -bool true;ok
+#defaults write com.apple.dock no-glass -bool true;ok
 
 #running "Disable the Launchpad gesture (pinch with thumb and three fingers)"
 #defaults write com.apple.dock showLaunchpadGestureEnabled -int 0;ok
@@ -472,8 +464,8 @@ sudo nvram boot-args="-v";ok
 running "allow 'locate' command"
 sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist > /dev/null 2>&1;ok
 
-running "Set standby delay to 30 minutes (default is 1 hour)"
-sudo pmset -a standbydelay 1800;ok
+running "Set standby delay to 24 hours (default is 1 hour)"
+sudo pmset -a standbydelay 86400;ok
 
 running "Disable the sound effects on boot"
 sudo nvram SystemAudioVolume=" ";ok
@@ -578,8 +570,8 @@ defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRightC
 defaults -currentHost write NSGlobalDomain com.apple.trackpad.trackpadCornerClickBehavior -int 1
 defaults -currentHost write NSGlobalDomain com.apple.trackpad.enableSecondaryClick -bool true;ok
 
-running "Enable 'natural' (Lion-style) scrolling"
-defaults write NSGlobalDomain com.apple.swipescrolldirection -bool true;ok
+running "Disable 'natural' (Lion-style) scrolling"
+defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false;ok
 
 running "Increase sound quality for Bluetooth headphones/headsets"
 defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40;ok
@@ -598,7 +590,7 @@ defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false;ok
 
 running "Set a blazingly fast keyboard repeat rate"
 defaults write NSGlobalDomain KeyRepeat -int 2
-defaults write NSGlobalDomain InitialKeyRepeat -int 20;ok
+defaults write NSGlobalDomain InitialKeyRepeat -int 10;ok
 
 running "Set language and text formats (english/US)"
 defaults write NSGlobalDomain AppleLanguages -array "en"
@@ -617,8 +609,8 @@ running "Require password immediately after sleep or screen saver begins"
 defaults write com.apple.screensaver askForPassword -int 1
 defaults write com.apple.screensaver askForPasswordDelay -int 0;ok
 
-running "Save screenshots to ~/screenshots"
-defaults write com.apple.screencapture location -string "${HOME}/screenshots";ok
+running "Save screenshots to the desktop"
+defaults write com.apple.screencapture location -string "${HOME}/Desktop";ok
 
 running "Save screenshots in PNG format (other options: BMP, GIF, JPG, PDF, TIFF)"
 defaults write com.apple.screencapture type -string "png";ok
@@ -644,12 +636,10 @@ defaults write com.apple.finder QuitMenuItem -bool true;ok
 running "Disable window animations and Get Info animations"
 defaults write com.apple.finder DisableAllAnimations -bool true;ok
 
-running "Set ~ as the default location for new Finder windows"
+running "Set Desktop as the default location for new Finder windows"
 # For other paths, use 'PfLo' and 'file:///full/path/here/'
-# defaults write com.apple.finder NewWindowTarget -string "PfDe"
-# defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/Desktop/";ok
-NewWindowTarget -string "PfLo"
-defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/";ok
+defaults write com.apple.finder NewWindowTarget -string "PfDe"
+defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/Desktop/";ok
 
 running "Show hidden files by default"
 defaults write com.apple.finder AppleShowAllFiles -bool true;ok
@@ -730,8 +720,8 @@ defaults write com.apple.dock tilesize -int 36;ok
 running "Change minimize/maximize window effect to scale"
 defaults write com.apple.dock mineffect -string "scale";ok
 
-running "Minimize windows into their application’s icon"
-defaults write com.apple.dock minimize-to-application -bool true;ok
+running "Don't minimize windows into their application’s icon"
+defaults write com.apple.dock minimize-to-application -bool false;ok
 
 running "Enable spring loading for all Dock items"
 defaults write com.apple.dock enable-spring-load-actions-on-all-items -bool true;ok
@@ -791,12 +781,9 @@ bot "Configuring Hot Corners"
 running "Top left screen corner → Mission Control"
 defaults write com.apple.dock wvous-tl-corner -int 2
 defaults write com.apple.dock wvous-tl-modifier -int 0;ok
-running "Top right screen corner → Notification Center"
-defaults write com.apple.dock wvous-tr-corner -int 12
+running "Top right screen corner → Desktop"
+defaults write com.apple.dock wvous-tr-corner -int 4
 defaults write com.apple.dock wvous-tr-modifier -int 0;ok
-running "Bottom left screen corner → Desktop"
-defaults write com.apple.dock wvous-bl-corner -int 4
-defaults write com.apple.dock wvous-bl-modifier -int 0;ok
 running "Bottom right screen corner → Start screen saver"
 defaults write com.apple.dock wvous-br-corner -int 5
 defaults write com.apple.dock wvous-br-modifier -int 0;ok
@@ -922,6 +909,10 @@ bot "Terminal & iTerm2"
 # i.e. hover over a window and start `typing in it without clicking first
 defaults write com.apple.terminal FocusFollowsMouse -bool true
 #defaults write org.x.X11 wm_ffm -bool true;ok
+
+# 
+# iTerm2: https://www.iterm2.com/documentation/2.1/documentation-hidden-settings.html
+# 
 running "Installing the Solarized Light theme for iTerm (opening file)"
 open "./configs/Solarized Light.itermcolors";ok
 running "Installing the Patched Solarized Dark theme for iTerm (opening file)"
@@ -1012,8 +1003,8 @@ defaults write com.apple.appstore ShowDebugMenu -bool true;ok
 bot "Messages"
 ###############################################################################
 
-# running "Disable automatic emoji substitution (i.e. use plain text smileys)"
-# defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool false;ok
+running "Disable automatic emoji substitution (i.e. use plain text smileys)"
+defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool false;ok
 
 running "Disable smart quotes as it’s annoying for messages that contain code"
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticQuoteSubstitutionEnabled" -bool false;ok
@@ -1021,17 +1012,17 @@ defaults write com.apple.messageshelper.MessageController SOInputLineSettings -d
 running "Disable continuous spell checking"
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "continuousSpellCheckingEnabled" -bool false;ok
 
-# ###############################################################################
-# bot "SizeUp.app"
-# ###############################################################################
+###############################################################################
+bot "SizeUp.app"
+###############################################################################
 
-# running "Start SizeUp at login"
-# defaults write com.irradiatedsoftware.SizeUp StartAtLogin -bool true;ok
+running "Start SizeUp at login"
+defaults write com.irradiatedsoftware.SizeUp StartAtLogin -bool true;ok
 
-# running "Don’t show the preferences window on next start"
-# defaults write com.irradiatedsoftware.SizeUp ShowPrefsOnNextStart -bool false;ok
+running "Don’t show the preferences window on next start"
+defaults write com.irradiatedsoftware.SizeUp ShowPrefsOnNextStart -bool false;ok
 
-# killall cfprefsd
+killall cfprefsd
 
 ###############################################################################
 # Kill affected applications                                                  #
@@ -1039,7 +1030,7 @@ defaults write com.apple.messageshelper.MessageController SOInputLineSettings -d
 bot "OK. Note that some of these changes require a logout/restart to take effect. Killing affected applications (so they can reboot)...."
 for app in "Activity Monitor" "Address Book" "Calendar" "Contacts" "cfprefsd" \
   "Dock" "Finder" "Mail" "Messages" "Safari" "SizeUp" "SystemUIServer" \
-  "iCal"; do
+  "iCal" "Terminal"; do
   killall "${app}" > /dev/null 2>&1
 done
 
