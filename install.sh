@@ -164,6 +164,12 @@ if [[ "$CURRENTSHELL" != "/usr/local/bin/zsh" ]]; then
   ok
 fi
 
+# command-line fuzzy finder
+#  - https://github.com/junegunn/fzf
+brew install fzf
+# To install useful key bindings and fuzzy completion:
+$(brew --prefix)/opt/fzf/install
+
 bot "creating symlinks for project dotfiles..."
 pushd homedir > /dev/null 2>&1
 now=$(date +"%Y.%m.%d.%H.%M.%S")
@@ -446,6 +452,9 @@ bot "Standard System Changes"
 running "always boot in verbose mode (not MacOS GUI mode)"
 sudo nvram boot-args="-v";ok
 
+runninn "replace system beep sound"
+defaults write NSGlobalDomain com.apple.sound.beep.sound -string "/System/Library/Sounds/Sosumi.aiff";ok
+
 running "allow 'locate' command"
 sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist > /dev/null 2>&1;ok
 
@@ -555,8 +564,8 @@ defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1;ok
 # defaults -currentHost write NSGlobalDomain com.apple.trackpad.trackpadCornerClickBehavior -int 1
 # defaults -currentHost write NSGlobalDomain com.apple.trackpad.enableSecondaryClick -bool true;ok
 
-running "Disable 'natural' (Lion-style) scrolling"
-defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false;ok
+running "Enable 'natural' (Lion-style) scrolling"
+defaults write NSGlobalDomain com.apple.swipescrolldirection -bool true;ok
 
 running "Increase sound quality for Bluetooth headphones/headsets"
 defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40;ok
@@ -575,7 +584,7 @@ defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false;ok
 
 running "Set a blazingly fast keyboard repeat rate"
 defaults write NSGlobalDomain KeyRepeat -int 2
-defaults write NSGlobalDomain InitialKeyRepeat -int 10;ok
+defaults write NSGlobalDomain InitialKeyRepeat -int 20;ok
 
 running "Set language and text formats (english/US)"
 defaults write NSGlobalDomain AppleLanguages -array "en"
@@ -898,9 +907,9 @@ bot "Terminal & iTerm2"
 defaults write com.apple.terminal FocusFollowsMouse -bool true
 #defaults write org.x.X11 wm_ffm -bool true;ok
 
-# 
+#
 # iTerm2: https://www.iterm2.com/documentation/2.1/documentation-hidden-settings.html
-# 
+#
 running "Installing the Solarized Light theme for iTerm (opening file)"
 open "./configs/Solarized Light.itermcolors";ok
 running "Installing the Patched Solarized Dark theme for iTerm (opening file)"

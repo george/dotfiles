@@ -132,4 +132,3 @@ if [[ -o interactive ]]; then
     printf "\033]1337;ShellIntegrationVersion=5;shell=zsh\007"
   fi
 fi
-alias imgcat=~/.iterm2/imgcat; alias it2dl=~/.iterm2/it2dl

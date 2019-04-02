@@ -4,7 +4,7 @@ module.exports = {
     'ack',
     'ag',
     // alternative to `cat`: https://github.com/sharkdp/bat
-    'bat', 
+    'bat',
     // Install GNU core utilities (those that come with macOS are outdated)
     // Don’t forget to add `$(brew --prefix coreutils)/libexec/gnubin` to `$PATH`.
     'coreutils',
@@ -45,8 +45,7 @@ module.exports = {
     // better, more recent vim
     'vim --with-override-system-vi',
     'watch',
-    // Install wget with IRI support
-    'wget --enable-iri'
+    'wget'
   ],
   cask: [
     //'adium',
@@ -65,6 +64,7 @@ module.exports = {
     'little-snitch',
     'macbreakz',
     'micro-snitch',
+    'phantomjs',
     'signal',
     //'macvim',
     'sizeup',
@@ -78,6 +78,7 @@ module.exports = {
     'xquartz'
   ],
   gem: [
+    'suggest_rb' // https://github.com/jbodah/suggest_rb
   ],
   npm: [
     'antic',
@@ -90,7 +91,8 @@ module.exports = {
     'prettyjson',
     'tldr',
     'trash',
-    'vtop'
+    'vtop',
+    'zapier-platform-cli'
     // ,'yo'
   ]
 };

@@ -1,6 +1,6 @@
 [user]
-  name = George Anderson
-  email = george@benevolentcode.com
+	name = George Anderson
+	email = george@benevolentcode.com
 [github]
   # https://github.com/blog/180-local-github-config
   user = george
@@ -49,6 +49,7 @@
   #safecrlf = true
   # editor = vim
   editor = subl -w
+	filemode = false
 
 [alias]
   # most commonly used
@@ -112,7 +113,8 @@
   l = log --stat -C
   ll = log --stat -C -3
   servehere = daemon --verbose --informative-errors --reuseaddr --export-all --base-path=. --enable=receive-pack
-  purgeme = !git clean -fd && git reset --hard
+  # purgeme = !git clean -fd && git reset --hard
+  purgeme = !git clean -d && git reset --hard
   prunenow = gc --prune=now
   ri = rebase --interactive --autosquash
   lol = log --pretty=oneline --graph --abbrev-commit --all
@@ -200,3 +202,8 @@
 #   clean = git-lfs clean %f
 #   smudge = git-lfs smudge %f
 #   required = true
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

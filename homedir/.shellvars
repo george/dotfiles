@@ -1,11 +1,11 @@
 # Set vim as default editor (vi is the default otherwise)
 # export EDITOR="vim"
 export EDITOR='subl -w'
-bindkey -v # retain vim-style zsh bindings
 
 # For YNAB's Docker environment
 # https://github.com/ynab/evergreen/wiki/Docker-development-environment
 export BUNDLE_ENTERPRISE__CONTRIBSYS__COM='393ee8f8:7ae2ea01'
+# bundle config --local enterprise.contribsys.com 393ee8f8:7ae2ea01
 export YNAB_EVERGREEN_PATH="$HOME/work/YNAB/evergreen"
 
 export LSCOLORS="exfxcxdxbxegedabagacad"
