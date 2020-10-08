@@ -1,6 +1,7 @@
 # Set vim as default editor (vi is the default otherwise)
 # export EDITOR="vim"
-export EDITOR='subl -w'
+# export EDITOR='subl -w'
+export EDITOR="code --wait"
 
 # For YNAB's Docker environment
 # https://github.com/ynab/evergreen/wiki/Docker-development-environment

@@ -28,3 +28,8 @@ id_rsa
 # Git #
 #######
 COMMIT_MESSAGE.md
+
+########
+# YNAB #
+########
+ynab_vagrant/*.log

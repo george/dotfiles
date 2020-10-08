@@ -48,7 +48,7 @@
   # prevent crlf (then you will have to deal with the problem -- dos2unix, etc)
   #safecrlf = true
   # editor = vim
-  editor = subl -w
+	editor = code --wait
 	filemode = false
 
 [alias]
@@ -159,9 +159,14 @@
   #Enable the recording of resolved conflicts, so that identical hunks can be resolved automatically later on
   enabled = 1
 
+[diff]
+  tool = default-difftool
+
 [difftool]
   prompt = false
 
+[difftool "default-difftool"]
+    cmd = code --wait --diff --new-window $LOCAL $REMOTE
 # [diff]
 #   tool = vimdiff
 

@@ -8,3 +8,5 @@ export PATH=/usr/local/bin:$PATH
 
 # YNAB
 export PATH="$HOME/work/YNAB/evergreen/scripts:$PATH"
+
+export PATH="$HOME/work/source_code/flutter/bin:$PATH"
