@@ -22,18 +22,6 @@ if [ $? -ne 0 ]; then
 
   # Keep-alive: update existing sudo time stamp until the script has finished
   while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
-
-  bot "Do you want me to setup this machine to allow you to run sudo without a password?\nPlease read here to see what I am doing:\nhttp://wiki.summercode.com/sudo_without_a_password_in_mac_os_x \n"
-
-  read -r -p "Make sudo passwordless? [y|N] " response
-
-  if [[ $response =~ (yes|y|Y) ]];then
-      if ! grep -q "#includedir /private/etc/sudoers.d" /etc/sudoers; then
-        echo '#includedir /private/etc/sudoers.d' | sudo tee -a /etc/sudoers > /dev/null
-      fi
-      echo -e "Defaults:$LOGNAME    !requiretty\n$LOGNAME ALL=(ALL) NOPASSWD:     ALL" | sudo tee /etc/sudoers.d/$LOGNAME
-      echo "You can now run sudo commands without password!"
-  fi
 fi
 
 # ###########################################################
@@ -52,79 +40,78 @@ else
     ok "skipped";
 fi
 
-# ###########################################################
-# Git Config
-# ###########################################################
-bot "OK, now I am going to update the .gitconfig for your user info:"
-grep 'user = GITHUBUSER' ./homedir/.gitconfig > /dev/null 2>&1
-if [[ $? = 0 ]]; then
-    read -r -p "What is your github.com username? " githubuser
+# # ###########################################################
+# # Git Config
+# # ###########################################################
+# bot "OK, now I am going to update the .gitconfig for your user info:"
+# grep 'user = george' ./homedir/.gitconfig > /dev/null 2>&1
+# if [[ $? = 0 ]]; then
+#     read -r -p "What is your github.com username? " githubuser
 
-  fullname=`osascript -e "long user name of (system info)"`
+#   fullname=`osascript -e "long user name of (system info)"`
 
-  if [[ -n "$fullname" ]];then
-    lastname=$(echo $fullname | awk '{print $2}');
-    firstname=$(echo $fullname | awk '{print $1}');
-  fi
+#   if [[ -n "$fullname" ]];then
+#     lastname=$(echo $fullname | awk '{print $2}');
+#     firstname=$(echo $fullname | awk '{print $1}');
+#   fi
 
-  if [[ -z $lastname ]]; then
-    lastname=`dscl . -read /Users/$(whoami) | grep LastName | sed "s/LastName: //"`
-  fi
-  if [[ -z $firstname ]]; then
-    firstname=`dscl . -read /Users/$(whoami) | grep FirstName | sed "s/FirstName: //"`
-  fi
-  email=`dscl . -read /Users/$(whoami)  | grep EMailAddress | sed "s/EMailAddress: //"`
+#   if [[ -z $lastname ]]; then
+#     lastname=`dscl . -read /Users/$(whoami) | grep LastName | sed "s/LastName: //"`
+#   fi
+#   if [[ -z $firstname ]]; then
+#     firstname=`dscl . -read /Users/$(whoami) | grep FirstName | sed "s/FirstName: //"`
+#   fi
+#   email=`dscl . -read /Users/$(whoami)  | grep EMailAddress | sed "s/EMailAddress: //"`
 
-  if [[ ! "$firstname" ]]; then
-    response='n'
-  else
-    echo -e "I see that your full name is $COL_YELLOW$firstname $lastname$COL_RESET"
-    read -r -p "Is this correct? [Y|n] " response
-  fi
+#   if [[ ! "$firstname" ]]; then
+#     response='n'
+#   else
+#     echo -e "I see that your full name is $COL_YELLOW$firstname $lastname$COL_RESET"
+#     read -r -p "Is this correct? [Y|n] " response
+#   fi
 
-  if [[ $response =~ ^(no|n|N) ]]; then
-    read -r -p "What is your first name? " firstname
-    read -r -p "What is your last name? " lastname
-  fi
-  fullname="$firstname $lastname"
+#   if [[ $response =~ ^(no|n|N) ]]; then
+#     read -r -p "What is your first name? " firstname
+#     read -r -p "What is your last name? " lastname
+#   fi
+#   fullname="$firstname $lastname"
 
-  bot "Great $fullname, "
+#   bot "Great $fullname, "
 
-  if [[ ! $email ]]; then
-    response='n'
-  else
-    echo -e "The best I can make out, your email address is $COL_YELLOW$email$COL_RESET"
-    read -r -p "Is this correct? [Y|n] " response
-  fi
+#   if [[ ! $email ]]; then
+#     response='n'
+#   else
+#     echo -e "The best I can make out, your email address is $COL_YELLOW$email$COL_RESET"
+#     read -r -p "Is this correct? [Y|n] " response
+#   fi
 
-  if [[ $response =~ ^(no|n|N) ]]; then
-    read -r -p "What is your email? " email
-    if [[ ! $email ]];then
-      error "you must provide an email to configure .gitconfig"
-      exit 1
-    fi
-  fi
+#   if [[ $response =~ ^(no|n|N) ]]; then
+#     read -r -p "What is your email? " email
+#     if [[ ! $email ]];then
+#       error "you must provide an email to configure .gitconfig"
+#       exit 1
+#     fi
+#   fi
 
+#   running "replacing items in .gitconfig with your info ($COL_YELLOW$fullname, $email, $githubuser$COL_RESET)"
 
-  running "replacing items in .gitconfig with your info ($COL_YELLOW$fullname, $email, $githubuser$COL_RESET)"
+#   # test if gnu-sed or MacOS sed
 
-  # test if gnu-sed or MacOS sed
-
-  sed -i "s/GITHUBFULLNAME/$firstname $lastname/" ./homedir/.gitconfig > /dev/null 2>&1 | true
-  if [[ ${PIPESTATUS[0]} != 0 ]]; then
-    echo
-    running "looks like you are using MacOS sed rather than gnu-sed, accommodating"
-    sed -i '' "s/GITHUBFULLNAME/$firstname $lastname/" ./homedir/.gitconfig
-    sed -i '' 's/GITHUBEMAIL/'$email'/' ./homedir/.gitconfig
-    sed -i '' 's/GITHUBUSER/'$githubuser'/' ./homedir/.gitconfig
-    ok
-  else
-    echo
-    bot "looks like you are already using gnu-sed. woot!"
-    sed -i 's/GITHUBEMAIL/'$email'/' ./homedir/.gitconfig
-    sed -i 's/GITHUBUSER/'$githubuser'/' ./homedir/.gitconfig
-  fi
-fi
+#   sed -i "s/GITHUBFULLNAME/$firstname $lastname/" ./homedir/.gitconfig > /dev/null 2>&1 | true
+#   if [[ ${PIPESTATUS[0]} != 0 ]]; then
+#     echo
+#     running "looks like you are using MacOS sed rather than gnu-sed, accommodating"
+#     sed -i '' "s/GITHUBFULLNAME/$firstname $lastname/" ./homedir/.gitconfig
+#     sed -i '' 's/GITHUBEMAIL/'$email'/' ./homedir/.gitconfig
+#     sed -i '' 's/GITHUBUSER/'$githubuser'/' ./homedir/.gitconfig
+#     ok
+#   else
+#     echo
+#     bot "looks like you are already using gnu-sed. woot!"
+#     sed -i 's/GITHUBEMAIL/'$email'/' ./homedir/.gitconfig
+#     sed -i 's/GITHUBUSER/'$githubuser'/' ./homedir/.gitconfig
+#   fi
+# fi
 
 # ###########################################################
 # Wallpaper
@@ -266,17 +253,17 @@ if [[ $response =~ (y|yes|Y) ]]; then
   popd > /dev/null 2>&1
 fi
 
-bot "VIM Setup"
-read -r -p "Do you want to install vim plugins now? [y|N] " response
-if [[ $response =~ (y|yes|Y) ]];then
-  bot "Installing vim plugins"
-  # cmake is required to compile vim bundle YouCompleteMe
-  # require_brew cmake
-  vim +PluginInstall +qall > /dev/null 2>&1
-  ok
-else
-  ok "skipped. Install by running :PluginInstall within vim"
-fi
+# bot "VIM Setup"
+# read -r -p "Do you want to install vim plugins now? [y|N] " response
+# if [[ $response =~ (y|yes|Y) ]];then
+#   bot "Installing vim plugins"
+#   # cmake is required to compile vim bundle YouCompleteMe
+#   # require_brew cmake
+#   vim +PluginInstall +qall > /dev/null 2>&1
+#   ok
+# else
+#   ok "skipped. Install by running :PluginInstall within vim"
+# fi
 
 
 read -r -p "Install fonts? [y|N] " response
@@ -449,7 +436,7 @@ defaults write com.apple.LaunchServices LSQuarantine -bool false
 ###############################################################################
 
 # running "Disable hibernation (speeds up entering sleep mode)"
-# sudo pmset -a hibernatemode 0;ok
+sudo pmset -a hibernatemode 0;ok
 
 running "Remove the sleep image file to save disk space"
 sudo rm -rf /Private/var/vm/sleepimage;ok
@@ -459,7 +446,7 @@ running "…and make sure it can’t be rewritten"
 sudo chflags uchg /Private/var/vm/sleepimage;ok
 
 #running "Disable the sudden motion sensor as it’s not useful for SSDs"
-# sudo pmset -a sms 0;ok
+sudo pmset -a sms 0;ok
 
 ################################################
 # Optional / Experimental                      #
@@ -504,10 +491,10 @@ sudo chflags uchg /Private/var/vm/sleepimage;ok
 # running "Wipe all (default) app icons from the Dock"
 # # This is only really useful when setting up a new Mac, or if you don’t use
 # # the Dock to launch apps.
-# defaults write com.apple.dock persistent-apps -array "";ok
+defaults write com.apple.dock persistent-apps -array "";ok
 
 #running "Enable the 2D Dock"
-#defaults write com.apple.dock no-glass -bool true;ok
+defaults write com.apple.dock no-glass -bool true;ok
 
 #running "Disable the Launchpad gesture (pinch with thumb and three fingers)"
 #defaults write com.apple.dock showLaunchpadGestureEnabled -int 0;ok
@@ -539,15 +526,13 @@ sudo nvram SystemAudioVolume=" ";ok
 running "Menu bar: disable transparency"
 defaults write NSGlobalDomain AppleEnableMenuBarTransparency -bool false;ok
 
-running "Menu bar: hide the Time Machine, Volume, User, and Bluetooth icons"
+running "Menu bar: hide the Time Machine and User icons"
 for domain in ~/Library/Preferences/ByHost/com.apple.systemuiserver.*; do
   defaults write "${domain}" dontAutoLoad -array \
     "/System/Library/CoreServices/Menu Extras/TimeMachine.menu" \
-    "/System/Library/CoreServices/Menu Extras/Volume.menu" \
     "/System/Library/CoreServices/Menu Extras/User.menu"
 done;
 defaults write com.apple.systemuiserver menuExtras -array \
-  "/System/Library/CoreServices/Menu Extras/Bluetooth.menu" \
   "/System/Library/CoreServices/Menu Extras/AirPort.menu" \
   "/System/Library/CoreServices/Menu Extras/Battery.menu" \
   "/System/Library/CoreServices/Menu Extras/Clock.menu"
@@ -673,7 +658,8 @@ defaults write com.apple.screensaver askForPassword -int 1
 defaults write com.apple.screensaver askForPasswordDelay -int 0;ok
 
 running "Save screenshots to the desktop"
-defaults write com.apple.screencapture location -string "${HOME}/Desktop";ok
+mkdir -p "${HOME}/screenshots"
+defaults write com.apple.screencapture location -string "${HOME}/screenshots";ok
 
 running "Save screenshots in PNG format (other options: BMP, GIF, JPG, PDF, TIFF)"
 defaults write com.apple.screencapture type -string "png";ok
@@ -700,10 +686,10 @@ defaults write com.apple.finder QuitMenuItem -bool true;ok
 running "Disable window animations and Get Info animations"
 defaults write com.apple.finder DisableAllAnimations -bool true;ok
 
-running "Set Desktop as the default location for new Finder windows"
+running "Set Documents as the default location for new Finder windows"
 # For other paths, use 'PfLo' and 'file:///full/path/here/'
 defaults write com.apple.finder NewWindowTarget -string "PfDe"
-defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/Desktop/";ok
+defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/Documents/";ok
 
 running "Show hidden files by default"
 defaults write com.apple.finder AppleShowAllFiles -bool true;ok
@@ -763,7 +749,6 @@ defaults write com.apple.NetworkBrowser BrowseAllInterfaces -bool true;ok
 
 running "Show the ~/Library folder"
 chflags nohidden ~/Library;ok
-
 
 running "Expand the following File Info panes: “General”, “Open with”, and “Sharing & Permissions”"
 defaults write com.apple.finder FXInfoPanesExpanded -dict \
@@ -1130,8 +1115,11 @@ defaults write com.apple.appstore ShowDebugMenu -bool true;ok
 bot "Messages"
 ###############################################################################
 
-running "Disable automatic emoji substitution (i.e. use plain text smileys)"
-defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool false;ok
+# running "Disable automatic emoji substitution (i.e. use plain text smileys)"
+# defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool false;ok
+
+running "Enable automatic emoji substitution (instead of plain text smileys)"
+defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool true;ok
 
 running "Disable smart quotes as it’s annoying for messages that contain code"
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticQuoteSubstitutionEnabled" -bool false;ok
@@ -1139,15 +1127,15 @@ defaults write com.apple.messageshelper.MessageController SOInputLineSettings -d
 running "Disable continuous spell checking"
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "continuousSpellCheckingEnabled" -bool false;ok
 
-###############################################################################
-bot "SizeUp.app"
-###############################################################################
+# ###############################################################################
+# bot "SizeUp.app"
+# ###############################################################################
 
-running "Start SizeUp at login"
-defaults write com.irradiatedsoftware.SizeUp StartAtLogin -bool true;ok
+# running "Start SizeUp at login"
+# defaults write com.irradiatedsoftware.SizeUp StartAtLogin -bool true;ok
 
-running "Don’t show the preferences window on next start"
-defaults write com.irradiatedsoftware.SizeUp ShowPrefsOnNextStart -bool false;ok
+# running "Don’t show the preferences window on next start"
+# defaults write com.irradiatedsoftware.SizeUp ShowPrefsOnNextStart -bool false;ok
 
 killall cfprefsd
 
@@ -1161,6 +1149,6 @@ for app in "Activity Monitor" "Address Book" "Calendar" "Contacts" "cfprefsd" \
   killall "${app}" > /dev/null 2>&1
 done
 
-brew update && brew upgrade && brew cleanup 
+brew update && brew upgrade && brew cleanup && brew doctor
 
 bot "Woot! All done"

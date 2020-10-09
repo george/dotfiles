@@ -18,7 +18,7 @@ module.exports = {
     'readline', // ensure gawk gets good readline
     'gawk',
     // http://www.lcdf.org/gifsicle/ (because I'm a gif junky)
-    'gifsicle',
+    // 'gifsicle',
     'gnupg',
     // Install GNU `sed`, overwriting the built-in `sed`
     // so we can do "sed -i 's/foo/bar/' file" instead of "sed -i '' 's/foo/bar/' file"
@@ -64,7 +64,6 @@ module.exports = {
     //'ireadfast',
     'iterm2',
     'little-snitch',
-    'macbreakz',
     'micro-snitch',
     'phantomjs',
     'signal',
