@@ -118,8 +118,8 @@ alias st="git status"
 alias w='cd ~/work'
 alias y='cd ~/work/YNAB'
 alias dotfiles='cd $ZSH'
-alias hg="history | grep"
-alias hgc="history | grep -C"
+alias hg="history 1 | grep"
+alias hgc="history 1 | grep -C"
 
 alias hu="heroku"
 
